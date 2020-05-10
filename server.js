@@ -37,10 +37,13 @@ function start() {
                 case "Add Department":
                     addDepartment()
                     break;
+                case "Add Role":
+                    addRole()
+                    break;
             }
         });
 }
-
+// create a function to add the department
 function addDepartment() {
     inquirer
         .prompt([
@@ -51,20 +54,69 @@ function addDepartment() {
             },
         ])
         .then(function (answer) {
-            console.log(answer.name)
-            var query = connection.query(
+            connection.query(
                 "INSERT INTO department SET ?",
                 {
                     name: answer.name
                 },
                 function (err, res) {
                     if (err) throw err;
-                    console.log(res.affectedRows)
+                    // let the user know what department they have added, then send them back to the main menu
+                    console.log(`You have added ${answer.name}`)
+                    start()
                 }
             )
         })
 }
 
+function addRole() {
+    connection.query("SELECT * FROM department", function (err, res) {
+        if (err) throw err;
+        const choices = res.map(result => {
+            // make choices an array that renames ID to value
+            return {
+                name: result.name, value: result.id
+            }
+        })
+        inquirer
+            .prompt([
+                {
+                    name: "title",
+                    type: "input",
+                    message: "What is the role title?",
+                },
+                {
+                    name: "salary",
+                    type: "input",
+                    message: "What is the salary for this role?",
+                },
+                {
+                    name: "department",
+                    type: "list",
+                    message: "Please choose a department.",
+                    choices
+                }
+            ])
+            // create variable called answers
+            .then(function (answers) {
+                connection.query(
+                    // sending user input to database
+                    "INSERT INTO role SET ?",
+                    {
+                        department_id: answers.department,
+                        title: answers.title,
+                        salary: answers.salary,
+                    },
+                    function (err) {
+                        if (err) throw err;
+                        console.log(`You have added the role ${answers.title}`)
+                        start()
+                    }
+                )
+            })
+    })
+
+}
 // function to handle posting new items up for auction
 function addManager() {
 
