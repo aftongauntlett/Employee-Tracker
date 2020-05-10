@@ -1,4 +1,4 @@
-# MAGStock 2020 Website
+# 
 
 ![GitHub forks](https://img.shields.io/github/forks/aftongauntlett/employee-tracker?style=social)
 
@@ -15,8 +15,6 @@ About Me: http://aftongauntlett.com/
 
 ## Technologies: 
 
-* HTML/CSS
-* Bootstrap
 * JavaScript
 * MySQL
 * Node.js
