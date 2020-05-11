@@ -30,6 +30,8 @@ function start() {
                 "Add Department",
                 "Add Role",
                 "Add Employee",
+                "Add Manager",
+                "Remove Employee",
             ]
         })
         .then(function (answer) {
@@ -46,6 +48,13 @@ function start() {
                 case "View all Employees":
                     viewEmployees()
                     break;
+                case "Remove Employee":
+                    removeEmployee()
+                    break;
+                case "Add Manager":
+                    addManagers()
+                    break;
+
             }
         });
 }
@@ -138,12 +147,12 @@ function addEmployee() {
             .prompt([{
                 name: "first_name",
                 type: "input",
-                message: "Please enter first name?",
+                message: "Please enter first name.",
             },
             {
                 name: "last_name",
                 type: "input",
-                message: "Please enter last name?",
+                message: "Please enter last name.",
             },
             {
                 name: "role",
@@ -185,7 +194,7 @@ function addEmployee() {
 
 }
 
-
+// view employee
 function viewEmployees() {
     connection.query("SELECT * FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id", function (err, res) {
         if (err) throw err;
@@ -196,7 +205,11 @@ function viewEmployees() {
     });
 }
 
+// remove employee
 function removeEmployee() {
+    connection.query("SELECT * FROM employee", function (err, res) {
+
+    })
     inquirer.prompt([
         {
             type: "input",
@@ -220,10 +233,10 @@ function removeEmployee() {
     });
 }
 
-function complete() {
-    console.log("Thanks for using Employee Tracker");
-    connection.end();
-}
+// function complete() {
+//     console.log("Thanks for using Employee Tracker");
+//     connection.end();
+// }
 
 
 // use console.table
