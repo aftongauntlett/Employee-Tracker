@@ -40,6 +40,12 @@ function start() {
                 case "Add Role":
                     addRole()
                     break;
+                case "Add Employee":
+                    addEmployee()
+                    break;
+                case "View all Employees":
+                    viewEmployees()
+                    break;
             }
         });
 }
@@ -117,52 +123,119 @@ function addRole() {
     })
 
 }
-// function to handle posting new items up for auction
-function addManager() {
 
-    // prompt for info about the item being put up for auction
-    inquirer
-        .prompt([
-            {
-                name: "item",
-                type: "input",
-                message: "What is the item you would like to submit?"
-            },
-            {
-                name: "category",
-                type: "input",
-                message: "What category would you like to place your auction in?"
-            },
-            {
-                name: "startingBid",
-                type: "input",
-                message: "What would you like your starting bid to be?",
-                validate: function (value) {
-                    if (isNaN(value) === false) {
-                        return true;
-                    }
-                    return false;
-                }
+function addEmployee() {
+
+    connection.query("SELECT * FROM role", function (err, res) {
+        if (err) throw err;
+        const choices = res.map(result => {
+            return {
+                name: result.title, value: result.id
             }
-        ])
-        .then(function (answer) {
-            // when finished prompting, insert a new item into the db with that info
-            connection.query(
-                "INSERT INTO auctions SET ?",
-                {
-                    item_name: answer.item,
-                    category: answer.category,
-                    starting_bid: answer.startingBid || 0,
-                    highest_bid: answer.startingBid || 0
-                },
-                function (err) {
-                    if (err) throw err;
-                    console.log("Your auction was created successfully!");
-                    // re-prompt the user for if they want to bid or post
-                    start();
-                }
-            );
-        });
+        })
+        console.log(res)
+        inquirer
+            .prompt([{
+                name: "first_name",
+                type: "input",
+                message: "Please enter first name?",
+            },
+            {
+                name: "last_name",
+                type: "input",
+                message: "Please enter last name?",
+            },
+            {
+                name: "role",
+                type: "list",
+                message: "Please choose a role.",
+                choices
+            },
+                // {
+                //     name: "manager",
+                //     type: "list",
+                //     message: "Is this employee a manager?",
+                //     choices: [
+                //         "Yes",
+                //         "No",
+                //     ]
+                // }
+            ])
+
+            // create variable called answers
+            .then(function (answers) {
+                connection.query(
+                    // sending user input to database
+                    "INSERT INTO employee SET ?",
+                    {
+                        // employee_id: answers.employee,
+                        first_name: answers.first_name,
+                        last_name: answers.last_name,
+                        role_id: answers.role,
+                        // manager: answers.manager
+                    },
+                    function (err) {
+                        if (err) throw err;
+                        console.log(`You have added the employee ${answers.first_name} ${answers.last_name}`)
+                        start()
+                    }
+                )
+            })
+    })
+
 }
 
 
+function viewEmployees() {
+    connection.query("SELECT * FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id", function (err, res) {
+        if (err) throw err;
+        // Log all results of the SELECT statement
+        console.table(res);
+        // connection.end();
+        start();
+    });
+}
+
+function removeEmployee() {
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "id",
+            message: "Which employee would you like to remove?"
+        }
+
+    ]).then(response => {
+        connection.query(
+            "DELETE FROM employee WHERE ?",
+            {
+                id: response.id
+            },
+            function (err, res) {
+                if (err) throw err;
+                console.log(res.affectedRows + " employee removed.\n");
+                // viewEmployee();
+                start();
+            }
+        )
+    });
+}
+
+function complete() {
+    console.log("Thanks for using Employee Tracker");
+    connection.end();
+}
+
+
+// use console.table
+
+// command line should allow:
+// add and view employee
+// add and view role
+// add and view department
+// update employee roles
+
+// bonus
+// update employee managers
+// view employees by manager
+// delete departments, roles and employees
+// view the total utilized budget of a department (combined salaries of all employees in dept)
