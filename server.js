@@ -7,7 +7,7 @@ const connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
     user: "root",
-    //adding this so I don't have to show my password in my code
+    //adding process.env so I don't have to show my password in my code
     password: process.env.PASSWORD,
     database: "trackingDB"
 });
@@ -53,9 +53,9 @@ function start() {
                 break;
         }
     })
-
 }
-// breakdown prompts with functions for each role, asking more questions about each within.
+
+// breakdown prompts with functions for each option, asking more questions about each within.
 function employeeMenu() {
     inquirer.prompt({
         name: "menu",
@@ -185,7 +185,28 @@ function addDepartment() {
 
 // Remove Department
 function removeDepartment() {
+    connection.query("SELECT * FROM department", function (err, res) {
+    })
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "id",
+            message: "Which department would you like to remove?"
+        }
 
+    ]).then(response => {
+        connection.query(
+            "DELETE FROM department WHERE ?",
+            {
+                id: response.id
+            },
+            function (err, res) {
+                if (err) throw err;
+                console.log(res.affectedRows + " department removed.\n");
+                start();
+            }
+        )
+    });
 }
 
 // view Role
@@ -285,15 +306,6 @@ function addEmployee() {
                 message: "Please choose a role.",
                 choices
             },
-                // {
-                //     name: "manager",
-                //     type: "list",
-                //     message: "Is this employee a manager?",
-                //     choices: [
-                //         "Yes",
-                //         "No",
-                //     ]
-                // }
             ])
 
             // create variable called answers
