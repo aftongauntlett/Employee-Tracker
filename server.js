@@ -3,8 +3,6 @@ const inquirer = require("inquirer");
 const cTable = require('console.table');
 const figlet = require('figlet');
 
-
-
 const connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
@@ -17,7 +15,7 @@ const connection = mysql.createConnection({
 // connect to the mysql server and sql database
 connection.connect(function (err) {
     if (err) throw err;
-    //run the start function after the connection is made to prompt the user
+    // added ASCII art node package
     figlet('Employee Tracker', function (err, data) {
         if (err) {
             console.log('Something went wrong...');
@@ -25,51 +23,142 @@ connection.connect(function (err) {
             return;
         }
         console.log(data)
+        //run the start function after the connection is made to prompt the user
         start();
     });
 });
 
 // prompt user if they want to add a manager or department
 function start() {
-    inquirer
-        .prompt({
-            name: "menu",
-            type: "list",
-            message: "What would you like to do?",
-            choices: [
-                "View all Employees",
-                "Add Department",
-                "Add Role",
-                "Add Employee",
-                "Add Manager",
-                "Remove Employee",
-            ]
-        })
-        .then(function (answer) {
-            switch (answer.menu) {
-                case "Add Department":
-                    addDepartment()
-                    break;
-                case "Add Role":
-                    addRole()
-                    break;
-                case "Add Employee":
-                    addEmployee()
-                    break;
-                case "View all Employees":
-                    viewEmployees()
-                    break;
-                case "Remove Employee":
-                    removeEmployee()
-                    break;
-                case "Add Manager":
-                    addManagers()
-                    break;
+    inquirer.prompt({
+        name: "menu",
+        type: "list",
+        message: "What would you like to do?",
+        choices: [
+            "Manage Users",
+            "Manage Roles",
+            "Manage Departments",
+        ]
+        // Create prompt to ask the user to choose between 3 options: role, department or employee
+    }).then(function (answer) {
+        switch (answer.menu) {
+            case "Manage Users":
+                employeeMenu();
+                break;
+            case "Manage Roles":
+                roleMenu();
+                break;
+            case "Manage Departments":
+                departmentMenu();
+                break;
+        }
+    })
 
-            }
-        });
 }
-// create a function to add the department
+// breakdown prompts with functions for each role, asking more questions about each within.
+function employeeMenu() {
+    inquirer.prompt({
+        name: "menu",
+        type: "list",
+        message: "What would you like to do with employees?",
+        choices: [
+            "View all Employees",
+            "View Employees by Manager",
+            "Add Employee",
+            "Add Manager",
+            "Update Employee Manager",
+            "Remove Employee",
+        ]
+    }).then(function (answer) {
+        switch (answer.menu) {
+            case "Add Manager":
+                addManagers()
+                break;
+            case "Add Employee":
+                addEmployee()
+                break;
+            case "View Employees":
+                viewEmployees()
+                break;
+            case "View Employees by Manager":
+                viewByManager()
+                break;
+            case "Remove Employee":
+                removeEmployee()
+                break;
+            case "Update Employee Role":
+                updateEmployeeRole()
+                break;
+            case "Update Employee Manager":
+                updateEmployeeManager()
+                break;
+        }
+    });
+}
+
+function roleMenu() {
+    inquirer.prompt({
+        name: "menu",
+        type: "list",
+        message: "What would you like to do with roles?",
+        choices: [
+            "View Roles",
+            "Add Role",
+            "Remove Role",
+        ]
+    }).then(function (answer) {
+        switch (answer.menu) {
+            case "Add Role":
+                addRole()
+                break;
+            case "View Roles":
+                viewRoles()
+                break;
+            case "Remove Role":
+                removeRole()
+                break;
+        }
+    });
+}
+
+function departmentMenu() {
+    inquirer.prompt({
+        name: "menu",
+        type: "list",
+        message: "What would you like to do with departments?",
+        choices: [
+            "View Departments",
+            "Add Department",
+            "Remove Department",
+            "View total utilized budget (combined salaries of all employees)",
+        ]
+    }).then(function (answer) {
+        switch (answer.menu) {
+            case "Add Department":
+                addDepartment()
+                break;
+            case "View Utilized Budget of Department":
+                viewBudget()
+                break;
+            case "View Departments":
+                viewDepartments()
+                break;
+            case "Remove Department":
+                removeDepartment()
+                break;
+        }
+    });
+}
+
+// View Departments
+function viewDepartments() {
+    connection.query("SELECT * FROM department", function (err, res) {
+        if (err) throw err;
+        console.table(res);
+        start();
+    });
+}
+// Add Department
 function addDepartment() {
     inquirer
         .prompt([
@@ -78,8 +167,7 @@ function addDepartment() {
                 type: "input",
                 message: "What is the Department name?",
             },
-        ])
-        .then(function (answer) {
+        ]).then(function (answer) {
             connection.query(
                 "INSERT INTO department SET ?",
                 {
@@ -95,6 +183,21 @@ function addDepartment() {
         })
 }
 
+// Remove Department
+function removeDepartment() {
+
+}
+
+// view Role
+function viewRoles() {
+    connection.query("SELECT * FROM role", function (err, res) {
+        if (err) throw err;
+        console.table(res);
+        start();
+    });
+}
+
+// Add Role
 function addRole() {
     connection.query("SELECT * FROM department", function (err, res) {
         if (err) throw err;
@@ -144,6 +247,18 @@ function addRole() {
 
 }
 
+// Remove Role
+function removeRole() {
+    connection.query("SELECT * FROM role", function (err, res) {
+        if (err) throw err;
+        console.table(res);
+        start();
+    });
+}
+
+
+
+// Add Employee
 function addEmployee() {
 
     connection.query("SELECT * FROM role", function (err, res) {
@@ -153,7 +268,6 @@ function addEmployee() {
                 name: result.title, value: result.id
             }
         })
-        console.log(res)
         inquirer
             .prompt([{
                 name: "first_name",
@@ -244,22 +358,8 @@ function removeEmployee() {
     });
 }
 
+
 // function complete() {
 //     console.log("Thanks for using Employee Tracker");
 //     connection.end();
 // }
-
-
-// use console.table
-
-// command line should allow:
-// add and view employee
-// add and view role
-// add and view department
-// update employee roles
-
-// bonus
-// update employee managers
-// view employees by manager
-// delete departments, roles and employees
-// view the total utilized budget of a department (combined salaries of all employees in dept)
