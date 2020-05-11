@@ -1,6 +1,9 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const cTable = require('console.table');
+const figlet = require('figlet');
+
+
 
 const connection = mysql.createConnection({
     host: "localhost",
@@ -15,7 +18,15 @@ const connection = mysql.createConnection({
 connection.connect(function (err) {
     if (err) throw err;
     //run the start function after the connection is made to prompt the user
-    start();
+    figlet('Employee Tracker', function (err, data) {
+        if (err) {
+            console.log('Something went wrong...');
+            console.dir(err);
+            return;
+        }
+        console.log(data)
+        start();
+    });
 });
 
 // prompt user if they want to add a manager or department
