@@ -35,14 +35,15 @@ function start() {
         type: "list",
         message: "What would you like to do?",
         choices: [
-            "Manage Users",
+            "Manage Employees",
             "Manage Roles",
             "Manage Departments",
+            "Exit",
         ]
         // Create prompt to ask the user to choose between 3 options: role, department or employee
     }).then(function (answer) {
         switch (answer.menu) {
-            case "Manage Users":
+            case "Manage Employees":
                 employeeMenu();
                 break;
             case "Manage Roles":
@@ -50,6 +51,9 @@ function start() {
                 break;
             case "Manage Departments":
                 departmentMenu();
+                break;
+            case "Exit":
+                exitApp()
                 break;
         }
     })
@@ -64,10 +68,12 @@ function employeeMenu() {
         choices: [
             "View all Employees",
             "View Employees by Manager",
+            "Update Employee Manager",
+            "Update Employee Role",
             "Add Employee",
             "Add Manager",
-            "Update Employee Manager",
             "Remove Employee",
+            "Return to Main Menu",
         ]
     }).then(function (answer) {
         switch (answer.menu) {
@@ -77,7 +83,7 @@ function employeeMenu() {
             case "Add Employee":
                 addEmployee()
                 break;
-            case "View Employees":
+            case "View all Employees":
                 viewEmployees()
                 break;
             case "View Employees by Manager":
@@ -92,8 +98,73 @@ function employeeMenu() {
             case "Update Employee Manager":
                 updateEmployeeManager()
                 break;
+            case "Return to Main Menu":
+                mainMenu()
+                break;
         }
     });
+}
+
+function addManagers() {
+    console.log("Add manager")
+}
+
+function viewByManager() {
+    console.log("View by manager")
+}
+
+function updateEmployeeRole() {
+    console.log("Update employee role")
+    connection.query("SELECT * FROM employee INNER JOIN role ON employee.role_id = role.id", (err, res) => {
+        if (err) throw err;
+        const choices = res.map((employee) => {
+            return {
+                name: `${employee.first_name} ${employee.last_name} -- ${employee.title}`,
+                value: employee.id
+            }
+        })
+        inquirer.prompt({
+            name: 'employee',
+            type: 'list',
+            message: "Which employee's role would you like to edit?",
+            choices
+        })
+            .then(answers => {
+                updateSpecificEmployeeRole(answers.employee)
+            })
+    })
+}
+
+function updateSpecificEmployeeRole(id) {
+    connection.query('SELECT * FROM role', (err, res) => {
+        if (err) throw err;
+        const choices = res.map(role => {
+            return {
+                name: role.title,
+                value: role.id
+            }
+        })
+
+        inquirer.prompt({
+            name: 'role',
+            type: 'list',
+            message: "Which role would you like the for the employee",
+            choices
+        }).then(answer => {
+            connection.query(`UPDATE employee SET role_id = ${answer.role} WHERE id = ${id}`, (err, res) => {
+                if (err) throw err;
+                mainMenu();
+            })
+        })
+    })
+}
+
+function updateEmployeeManager() {
+    console.log("Update employee manager")
+}
+
+function viewBudget() {
+    console.log("View budget")
 }
 
 function roleMenu() {
@@ -105,7 +176,9 @@ function roleMenu() {
             "View Roles",
             "Add Role",
             "Remove Role",
+            "Return to Main Menu"
         ]
+
     }).then(function (answer) {
         switch (answer.menu) {
             case "Add Role":
@@ -116,6 +189,9 @@ function roleMenu() {
                 break;
             case "Remove Role":
                 removeRole()
+                break;
+            case "Main Menu":
+                mainMenu()
                 break;
         }
     });
@@ -131,6 +207,7 @@ function departmentMenu() {
             "Add Department",
             "Remove Department",
             "View total utilized budget (combined salaries of all employees)",
+            "Return to Main Menu",
         ]
     }).then(function (answer) {
         switch (answer.menu) {
@@ -146,18 +223,13 @@ function departmentMenu() {
             case "Remove Department":
                 removeDepartment()
                 break;
+            case "Main Menu":
+                mainMenu()
+                break;
         }
     });
 }
 
-// View Departments
-function viewDepartments() {
-    connection.query("SELECT * FROM department", function (err, res) {
-        if (err) throw err;
-        console.table(res);
-        start();
-    });
-}
 // Add Department
 function addDepartment() {
     inquirer
@@ -181,6 +253,15 @@ function addDepartment() {
                 }
             )
         })
+}
+
+// View Departments
+function viewDepartments() {
+    connection.query("SELECT * FROM department", function (err, res) {
+        if (err) throw err;
+        console.table(res);
+        start();
+    });
 }
 
 // Remove Department
@@ -209,14 +290,6 @@ function removeDepartment() {
     });
 }
 
-// view Role
-function viewRoles() {
-    connection.query("SELECT * FROM role", function (err, res) {
-        if (err) throw err;
-        console.table(res);
-        start();
-    });
-}
 
 // Add Role
 function addRole() {
@@ -268,8 +341,8 @@ function addRole() {
 
 }
 
-// Remove Role
-function removeRole() {
+// view Role
+function viewRoles() {
     connection.query("SELECT * FROM role", function (err, res) {
         if (err) throw err;
         console.table(res);
@@ -277,11 +350,35 @@ function removeRole() {
     });
 }
 
+// Remove Role
+function removeRole() {
+    connection.query("SELECT * FROM role", function (err, res) {
 
+    })
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "id",
+            message: "Which role would you like to remove?"
+        }
+
+    ]).then(response => {
+        connection.query(
+            "DELETE FROM role WHERE ?",
+            {
+                id: response.id
+            },
+            function (err, res) {
+                if (err) throw err;
+                console.log(res.affectedRows + " role removed.\n");
+                start();
+            }
+        )
+    });
+}
 
 // Add Employee
 function addEmployee() {
-
     connection.query("SELECT * FROM role", function (err, res) {
         if (err) throw err;
         const choices = res.map(result => {
@@ -342,6 +439,8 @@ function viewEmployees() {
     });
 }
 
+// update employee
+
 // remove employee
 function removeEmployee() {
     connection.query("SELECT * FROM employee", function (err, res) {
@@ -363,15 +462,27 @@ function removeEmployee() {
             function (err, res) {
                 if (err) throw err;
                 console.log(res.affectedRows + " employee removed.\n");
-                // viewEmployee();
                 start();
             }
         )
     });
 }
 
+// return to the main menu
+function mainMenu() {
+    start();
+}
 
-// function complete() {
-//     console.log("Thanks for using Employee Tracker");
-//     connection.end();
-// }
+// exit the app
+function exitApp() {
+    figlet('Thanks!', function (err, data) {
+        if (err) {
+            console.log('Something went wrong...');
+            console.dir(err);
+            return;
+        }
+        console.log(data)
+        connection.end();
+    });
+}
+
