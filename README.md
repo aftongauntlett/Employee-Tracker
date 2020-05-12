@@ -9,7 +9,7 @@ Project URL: https://github.com/aftongauntlett/Employee-Tracker
 
 
 # Description
-A command line employee manager app. Used to keep track of employees, roles and departments. Ability to add, view and remove each category. 
+A command line employee manager app. Used to keep track of employees, roles and departments. Ability to add, view and remove sections from each category. 
 
 # Installation:
 
