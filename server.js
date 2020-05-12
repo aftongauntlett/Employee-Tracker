@@ -67,27 +67,22 @@ function employeeMenu() {
         message: "What would you like to do with employees?",
         choices: [
             "View all Employees",
-            "View Employees by Manager",
-            "Update Employee Manager",
-            "Update Employee Role",
             "Add Employee",
-            "Add Manager",
             "Remove Employee",
+            "Update Employee Role",
             "Return to Main Menu",
+            // removing manager items for now
+            // "View Employees by Manager",
+            // "Update Employee Manager",
+            // "Add Manager",
         ]
     }).then(function (answer) {
         switch (answer.menu) {
-            case "Add Manager":
-                addManagers()
-                break;
             case "Add Employee":
                 addEmployee()
                 break;
             case "View all Employees":
                 viewEmployees()
-                break;
-            case "View Employees by Manager":
-                viewByManager()
                 break;
             case "Remove Employee":
                 removeEmployee()
@@ -95,26 +90,38 @@ function employeeMenu() {
             case "Update Employee Role":
                 updateEmployeeRole()
                 break;
-            case "Update Employee Manager":
-                updateEmployeeManager()
-                break;
             case "Return to Main Menu":
                 mainMenu()
                 break;
+            // removing manager items for now
+            // case "Add Manager":
+            //     addManagers()
+            //     break;
+            // case "View Employees by Manager":
+            //     viewByManager()
+            //     break;
+            // case "Update Employee Manager":
+            //     updateEmployeeManager()
+            //     break;
         }
     });
 }
 
-function addManagers() {
-    console.log("Add manager")
-}
+// removing manager options for now
 
-function viewByManager() {
-    console.log("View by manager")
-}
+// function addManagers() {
+//     console.log("Add manager")
+// }
+
+// function viewByManager() {
+//     console.log("View by manager")
+// }
+
+// function updateEmployeeManager() {
+//     console.log("Update employee manager")
+// }
 
 function updateEmployeeRole() {
-    console.log("Update employee role")
     connection.query("SELECT * FROM employee INNER JOIN role ON employee.role_id = role.id", (err, res) => {
         if (err) throw err;
         const choices = res.map((employee) => {
@@ -159,13 +166,11 @@ function updateSpecificEmployeeRole(id) {
     })
 }
 
-function updateEmployeeManager() {
-    console.log("Update employee manager")
-}
+// removing budget option for now
 
-function viewBudget() {
-    console.log("View budget")
-}
+// function viewBudget() {
+//     console.log("View budget")
+// }
 
 function roleMenu() {
     inquirer.prompt({
@@ -190,7 +195,7 @@ function roleMenu() {
             case "Remove Role":
                 removeRole()
                 break;
-            case "Main Menu":
+            case "Return to Main Menu":
                 mainMenu()
                 break;
         }
@@ -206,8 +211,9 @@ function departmentMenu() {
             "View Departments",
             "Add Department",
             "Remove Department",
-            "View total utilized budget (combined salaries of all employees)",
             "Return to Main Menu",
+            // will come back to this
+            // "View total utilized budget (combined salaries of all employees)",
         ]
     }).then(function (answer) {
         switch (answer.menu) {
@@ -223,7 +229,7 @@ function departmentMenu() {
             case "Remove Department":
                 removeDepartment()
                 break;
-            case "Main Menu":
+            case "Return to Main Menu":
                 mainMenu()
                 break;
         }
@@ -267,29 +273,34 @@ function viewDepartments() {
 // Remove Department
 function removeDepartment() {
     connection.query("SELECT * FROM department", function (err, res) {
-    })
-    inquirer.prompt([
-        {
-            type: "input",
-            name: "id",
-            message: "Which department would you like to remove?"
-        }
-
-    ]).then(response => {
-        connection.query(
-            "DELETE FROM department WHERE ?",
-            {
-                id: response.id
-            },
-            function (err, res) {
-                if (err) throw err;
-                console.log(res.affectedRows + " department removed.\n");
-                start();
+        const choices = res.map(department => {
+            return {
+                name: department.name,
+                value: department.id
             }
-        )
-    });
-}
+        })
+        inquirer.prompt([
+            {
+                name: "id",
+                type: "list",
+                message: "Which department would you like to remove?",
+                choices
+            }
 
+        ]).then(response => {
+            connection.query(
+                "DELETE FROM department WHERE ?",
+                response.id,
+                function (err, res) {
+                    if (err) throw err;
+                    console.log(res.affectedRows + " department removed.\n");
+                    start();
+                }
+            )
+        });
+    })
+
+}
 
 // Add Role
 function addRole() {
@@ -353,28 +364,33 @@ function viewRoles() {
 // Remove Role
 function removeRole() {
     connection.query("SELECT * FROM role", function (err, res) {
-
-    })
-    inquirer.prompt([
-        {
-            type: "input",
-            name: "id",
-            message: "Which role would you like to remove?"
-        }
-
-    ]).then(response => {
-        connection.query(
-            "DELETE FROM role WHERE ?",
-            {
-                id: response.id
-            },
-            function (err, res) {
-                if (err) throw err;
-                console.log(res.affectedRows + " role removed.\n");
-                start();
+        const choices = res.map(role => {
+            return {
+                name: role.title,
+                value: role.id
             }
-        )
-    });
+        })
+        inquirer.prompt([
+            {
+                name: "id",
+                type: "list",
+                message: "Which role would you like to remove?",
+                choices
+            }
+
+        ]).then(response => {
+            connection.query(
+                "DELETE FROM role WHERE ?",
+                response.id,
+                function (err, res) {
+                    if (err) throw err;
+                    console.log(res.affectedRows + " role removed.\n");
+                    start();
+                }
+            )
+        });
+    })
+
 }
 
 // Add Employee
@@ -439,33 +455,36 @@ function viewEmployees() {
     });
 }
 
-// update employee
-
 // remove employee
 function removeEmployee() {
     connection.query("SELECT * FROM employee", function (err, res) {
-
-    })
-    inquirer.prompt([
-        {
-            type: "input",
-            name: "id",
-            message: "Which employee would you like to remove?"
-        }
-
-    ]).then(response => {
-        connection.query(
-            "DELETE FROM employee WHERE ?",
-            {
-                id: response.id
-            },
-            function (err, res) {
-                if (err) throw err;
-                console.log(res.affectedRows + " employee removed.\n");
-                start();
+        const choices = res.map(employee => {
+            return {
+                name: employee.first_name + " " + employee.last_name,
+                value: employee.id
             }
-        )
-    });
+        })
+        inquirer.prompt([
+            {
+                name: "id",
+                type: "list",
+                message: "Which employee would you like to remove?",
+                choices
+            }
+
+        ]).then(response => {
+            connection.query(
+                "DELETE FROM employee WHERE ?",
+                response.id,
+                function (err, res) {
+                    if (err) throw err;
+                    console.log(res.affectedRows + " employee removed.\n");
+                    start();
+                }
+            )
+        });
+    })
+
 }
 
 // return to the main menu
@@ -475,7 +494,7 @@ function mainMenu() {
 
 // exit the app
 function exitApp() {
-    figlet('Thanks!', function (err, data) {
+    figlet('Goodbye!', function (err, data) {
         if (err) {
             console.log('Something went wrong...');
             console.dir(err);
