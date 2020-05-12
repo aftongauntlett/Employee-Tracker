@@ -13,9 +13,21 @@ A command line employee manager app. Used to keep track of employees, roles and 
 
 # Installation:
 
+## Install 
+```MySQL``` 
+
+```MySQL Workbench``` 
+
+## Run inside of Workbench
+```schema.sql``` 
+
+```seed.sql``` 
+
+## Run in Command Line
+
 ```npm install``` 
 
-```server.js``` 
+```node server.js``` 
 
 Follow prompts
 
